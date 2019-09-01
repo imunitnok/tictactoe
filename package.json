@@ -1,0 +1,17 @@
+{
+  "name": "web-app-course-tictactoe",
+  "version": "0.0.0",
+  "description": "Simple TicTacToe application",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Timofei Shugailo",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3"
+  },
+  "dependencies": {
+    "fsevents": "^2.0.7"
+  }
+}
