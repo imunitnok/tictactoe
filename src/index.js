@@ -2,44 +2,88 @@
 import "./style.css"
 import { strict } from "assert";
 
-const MAX_WIDTH = 100;
-const MAX_HEIGHT = 100;
 const DEF_INIT_WIDTH = 5;
 const DEF_INIT_HEIGHT = 5;
 const DEF_PLAYERS_NUM = 2;
 
 class GameField {
+
+    /**
+     * @constructor
+     * @this {GameField}
+     * @param {number} width Initial width of game field 
+     * @param {number} height Initial height of game field 
+     * @param {number} playersNumber Number of players
+     */
     constructor(width = DEF_INIT_WIDTH, height = DEF_INIT_HEIGHT,
-                    maxWidth = MAX_WIDTH, maxHeight = MAX_HEIGHT,
                     playersNumber = DEF_PLAYERS_NUM) {
-        this.width = width;
-        this.height = height;
 
-        this.max = {
-            width : maxWidth,
-            height : maxHeight
-        }
+        /**@readonly */ this._width = width;
+        /**@readonly */ this._height = height;
 
-        this.state = [];
+        /**@private */ this._state = [];
         for (let i = 0; i < height; i++) {
-            this.state.push([]);
+            this._state.push([]);
             for (let j = 0; j < width; j++) {
-                this.state[i].push({})
+                this._state[i].push({})
             }
         }
 
-        this.player = 0;
-        this.playersNumber = playersNumber;
+        /**@readonly */ this._player = 0;
+        /**@private */ this._playersNumber = playersNumber;
     }
 
-    turn(row, column) {
+    /**
+     * Return current player
+     * @return {numder} Height of game field
+     */
+    get player() {
+        return this._player;
+    }
+    
+    /**
+     * Get width of game field
+     * @return {number} Width of game field
+     */
+    get width() {
+        return this._width;
+    }
+
+    /**
+     * Return height of game field
+     * @return {number} Height of game field
+     */
+    get height() {
+        return this._height;
+    }
+
+    /**
+     * @typedef {Object} Size
+     * @property {number} width Width of game field
+     * @property {number} height Height of game field
+     * 
+     * Return size of game field
+     * @return {Size} Current size of game field
+     */
+    getSize() {
+        return {
+            width: this.width,
+            height: this.height
+        }
+    }
+
+    /**
+     * Resize game field.
+     * The playing field should be two rows larger
+     * than the farthest sign puted by the players.
+     */
+    _resizeField(row, column) {
         let width = this.width;
         let height = this.height;
-        let player = this.player;
 
         for (let j = 0; j < 3 - column; j++) {
             for (let i = 0; i < height; i++) {
-                this.state[i].unshift({});
+                this._state[i].unshift({});
             }
         }
 
@@ -47,9 +91,9 @@ class GameField {
         height = 3 - row > 0 ? height + 3 - row : height;
 
         for (let i = 0; i < 3 - row; i++) {
-            this.state.unshift([]);
+            this._state.unshift([]);
             for (let j = 0; j < width; j++) {
-                this.state[0].push({});
+                this._state[0].push({});
             }
         }
 
@@ -58,56 +102,74 @@ class GameField {
 
         for (let j = width; j < column + 3; j++) {
             for (let i = 0; i < height; i++) {
-                this.state[i].unshift({});
+                this._state[i].unshift({});
             }
         }
         width = width <= column + 3 ? column + 3 : width;
 
         for (let i = height; i < row + 3; i++) {
-            this.state.push([]);
+            this._state.push([]);
             for (let j = 0; j < width; j++) {
-                this.state[i].push({});
+                this._state[i].push({});
             }
         }
         height = height <= row + 3 ? row + 3 : height;
 
-        this.width = width;
-        this.height = height;
-
-        if (this.state[row][column].field != undefined) return;
-        this.state[row][column].field = player;
-    
-        this.calculate(row, column);
-        this.player = (player + 1) % this.playersNumber;
+        this._width = width;
+        this._height = height;
     }
 
-    calculate(row, column) {
+    /**
+     * Calculate length of line in given direction
+     * @param {number} rdir Horizontal movemnt direction:
+     *          1 from left to right,
+     *          0 stay,
+     *          -1 reverse direction
+     * @param {number} cdir Vertical movemnt direction:
+     *          1 way down,
+     *          0 stay,
+     *          -1 way up
+     */
+    _checkDir(row, column, rdir, cdir) {
         let player = this.player;
-        let state = this.state;
+        let state = this._state;
 
         let i = row, j = column;
         while (state[i][j].field != undefined && state[i][j].field == player) {
-            state[i][j].left = state[i][j-1].field == player ? state[i][j-1].left+1 : 1;
-            j++;
+            state[i][j].left = state[i-rdir][j-cdir].field == player ?
+                state[i-rdir][j-cdir].left + 1 : 1;
+            i += rdir; j += cdir;
         }
+    }
 
-        i = row; j = column;
-        while (state[i][j].field != undefined && state[i][j].field == player) {
-            state[i][j].upLeft = state[i-1][j-1].field == player ? state[i-1][j-1].upLeft+1 : 1;
-            i++; j++;
-        }
+    /**
+     * Calculate additional inforamtion.
+     * This information is required to determine the winner.
+     */
+    _calculateState(row, column) {
+        let player = this.player;
+        let state = this._state;
 
-        i = row; j = column;
-        while (state[i][j].field != undefined && state[i][j].field == player) {
-            state[i][j].up = state[i-1][j].field == player ? state[i-1][j].up+1 : 1;
-            i++;
-        }
-        
-        i = row; j = column;
-        while (state[i][j].field != undefined && state[i][j].field == player) {
-            state[i][j].upRight = state[i-1][j+1].field == player ? state[i-1][j+1].upRight+1 : 1;
-            i++; j--;
-        }
+        this._checkDir(row, column, 0, 1);
+        this._checkDir(row, column, 1, 1);
+        this._checkDir(row, column, 1, 0);
+        this._checkDir(row, column, 1, -1);
+    }
+
+    /**
+     * Put current player sign to (row, column) position
+     * 
+     * @param {number} row Row number from up side 
+     * @param {number} column Column number from left side 
+     */
+    turn(row, column) {
+        this._resizeField(row, column); 
+
+        if (this._state[row][column].field != undefined) return;
+        this._state[row][column].field = this.player;
+    
+        this._calculateState(row, column);
+        this.player = (this.player + 1) % this._playersNumber;
     }
 }
 
