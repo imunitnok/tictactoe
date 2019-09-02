@@ -6,17 +6,19 @@
   "scripts": {
     "run": "parcel index.html --open",
     "build": "parcel build index.html",
-    "test": "mocha ./src/test"
+    "babel-build": "babel src -d lib",
+    "test": "mocha ./lib/test"
   },
   "author": "Timofei Shugailo",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
     "chai": "^4.2.0",
+    "fsevents": "^2.0.7",
     "mocha": "^6.2.0",
-    "parcel-bundler": "^1.12.3",
-    "fsevents": "^2.0.7"
+    "parcel-bundler": "^1.12.3"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

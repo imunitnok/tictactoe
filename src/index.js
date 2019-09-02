@@ -1,12 +1,10 @@
 "use strict";
-import "./style.css"
-import { strict } from "assert";
 
 const DEF_INIT_WIDTH = 5;
 const DEF_INIT_HEIGHT = 5;
 const DEF_PLAYERS_NUM = 2;
 
-class GameField {
+export class GameField {
 
     /**
      * @constructor
@@ -31,11 +29,17 @@ class GameField {
 
         /**@readonly */ this._player = 0;
         /**@private */ this._playersNumber = playersNumber;
+
+        /**@readonly */ this._moves = [];
+
+        /**@private */ this._shift = {
+            up: 0, left: 0
+        }
     }
 
     /**
-     * Return current player
-     * @return {numder} Height of game field
+     * Returns current player
+     * @returns {numder} Height of game field
      */
     get player() {
         return this._player;
@@ -43,15 +47,15 @@ class GameField {
     
     /**
      * Get width of game field
-     * @return {number} Width of game field
+     * @returns {number} Width of game field
      */
     get width() {
         return this._width;
     }
 
     /**
-     * Return height of game field
-     * @return {number} Height of game field
+     * Returns height of game field
+     * @returns {number} Height of game field
      */
     get height() {
         return this._height;
@@ -62,14 +66,27 @@ class GameField {
      * @property {number} width Width of game field
      * @property {number} height Height of game field
      * 
-     * Return size of game field
-     * @return {Size} Current size of game field
+     * Returns size of game field
+     * @returns {Size} Current size of game field
      */
     getSize() {
         return {
             width: this.width,
             height: this.height
         }
+    }
+
+    /**
+     * @typedef {Object} Move
+     * @property {number} row Move row
+     * @property {number} column Move column
+     * @property {number} player Player who made the move
+     * 
+     * Returns array of steps in order of committing
+     * @returns {Move[]} Array of commited moves
+     */
+    get moves() {
+        return this._moves;
     }
 
     /**
@@ -81,31 +98,36 @@ class GameField {
         let width = this.width;
         let height = this.height;
 
-        for (let j = 0; j < 3 - column; j++) {
+        for (let j = 0; j < 2 - column; j++) {
             for (let i = 0; i < height; i++) {
                 this._state[i].unshift({});
             }
         }
 
-        width = 3 - column > 0 ? width + 3 - column : width;
-        height = 3 - row > 0 ? height + 3 - row : height;
+        let shift = {
+            up: 2 - column > 0 ? 2 - column : 0,
+            left: 2 - row > 0 ? 2 - row : 0
+        }
+        this._shift += shift;
+        width += shift.left;
+        height += shift.up;
 
-        for (let i = 0; i < 3 - row; i++) {
+        for (let i = 0; i < 2 - row; i++) {
             this._state.unshift([]);
             for (let j = 0; j < width; j++) {
                 this._state[0].push({});
             }
         }
 
-        column = 3 - column > 0 ? 3 - column : column;
-        row = 3 - row > 0 ? 3 - row : row;
+        column = 2 - column > 0 ? 2 - column : column;
+        row = 2 - row > 0 ? 2 - row : row;
 
         for (let j = width; j < column + 3; j++) {
             for (let i = 0; i < height; i++) {
-                this._state[i].unshift({});
+                this._state[i].push({});
             }
         }
-        width = width <= column + 3 ? column + 3 : width;
+        width = width < column + 3 ? column + 3 : width;
 
         for (let i = height; i < row + 3; i++) {
             this._state.push([]);
@@ -113,10 +135,12 @@ class GameField {
                 this._state[i].push({});
             }
         }
-        height = height <= row + 3 ? row + 3 : height;
+        height = height < row + 3 ? row + 3 : height;
 
         this._width = width;
         this._height = height;
+
+        return {row, column, shift};
     }
 
     /**
@@ -147,13 +171,12 @@ class GameField {
      * This information is required to determine the winner.
      */
     _calculateState(row, column) {
-        let player = this.player;
-        let state = this._state;
 
         this._checkDir(row, column, 0, 1);
         this._checkDir(row, column, 1, 1);
         this._checkDir(row, column, 1, 0);
         this._checkDir(row, column, 1, -1);
+
     }
 
     /**
@@ -163,16 +186,41 @@ class GameField {
      * @param {number} column Column number from left side 
      */
     turn(row, column) {
-        this._resizeField(row, column); 
+        let tmp = this._resizeField(row, column); 
+        row = tmp.row;
+        column = tmp.column;
 
+        let player = this.player;
+        this._moves.push({row, column, player, shift: tmp.shift})
+        
         if (this._state[row][column].field != undefined) return;
         this._state[row][column].field = this.player;
-    
+
         this._calculateState(row, column);
-        this.player = (this.player + 1) % this._playersNumber;
+        this._player = (this.player + 1) % this._playersNumber;
     }
 }
 
 let game = new GameField();
+game
+game.turn(0, 0);
 
-let tbody = document.getElementById("board").firstElementCild.firstElementChild.innerHTML = "There will be a TicTacToe game";
+let showField = function(game) {
+
+    let tbody = document.getElementById("board").firstElementChild;
+
+    for (let i = 0; i < game.height; i++) {
+        let tr = document.createElement("tr");
+        for (let j = 0; j < game.width; j++) {
+            let td = document.createElement("td");
+            tr.append(td);
+        }
+        tbody.append(tr);
+    }
+
+    for (let move in game.moves) {
+        tbody.rows[move.row + move.shift.up]
+            .cells[move.column + move.shift.left]
+            .InnerHtml = `<div class=\"player${move.player}\"></div>`;
+    }
+}
