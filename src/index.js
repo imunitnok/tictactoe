@@ -1,8 +1,13 @@
 "use strict";
 
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
+
+//import "./style.css"
+
 const DEF_INIT_WIDTH = 5;
 const DEF_INIT_HEIGHT = 5;
 const DEF_PLAYERS_NUM = 2;
+const DEF_GROW_SHIFT = 2;
 
 export class GameField {
 
@@ -14,65 +19,65 @@ export class GameField {
      * @param {number} playersNumber Number of players
      */
     constructor(width = DEF_INIT_WIDTH, height = DEF_INIT_HEIGHT,
-                    playersNumber = DEF_PLAYERS_NUM) {
+                    plNum = DEF_PLAYERS_NUM, grow = DEF_GROW_SHIFT) {
 
-        /**@readonly */ this._width = width;
-        /**@readonly */ this._height = height;
+        /**@private */ this._width = width;
+        /**@private */ this._height = height;
+        /**@private */ this._grow = grow;
 
-        /**@private */ this._state = [];
-        for (let i = 0; i < height; i++) {
-            this._state.push([]);
-            for (let j = 0; j < width; j++) {
-                this._state[i].push({})
-            }
-        }
+        let tmp = this.constructor._initField(this._height, this._width);
+        /**@private */ this._field = tmp.field;
+        /**@private */ this._state = tmp.state;
 
         /**@readonly */ this._player = 0;
-        /**@private */ this._playersNumber = playersNumber;
+        /**@private */ this._plNum = plNum;
 
         /**@readonly */ this._moves = [];
+    }
 
-        /**@private */ this._shift = {
-            up: 0, left: 0
+    /**
+     * @typedef {Object} State
+     *
+     * @private
+     * 
+     * Creates empty game field with
+     * @param {number} height The height of initial game field
+     * @param {number} width The width of initial game field
+     * @returns {number[], State[]} Initial game field state 
+     * with empty State objects and undefined values of field array  
+     */
+    static _initField(height, width) {
+        let field = [], state = [];
+        for (let i = 0; i < height + 2; i++) {
+            field.push([]);
+            state.push([]);
+            for (let j = 0; j < width + 2; j++) {
+                field[i].push(undefined);
+                state[i].push({})
+            }
+        }
+        return {field, state}
+    }
+
+    _shiftMoves(shift) {
+        let moves = this._moves;
+        for(let move of moves) {
+            move.row += shift.up;
+            move.column += shift.left;
         }
     }
 
-    /**
-     * Returns current player
-     * @returns {numder} Height of game field
-     */
-    get player() {
-        return this._player;
-    }
-    
-    /**
-     * Get width of game field
-     * @returns {number} Width of game field
-     */
-    get width() {
-        return this._width;
-    }
-
-    /**
-     * Returns height of game field
-     * @returns {number} Height of game field
-     */
-    get height() {
-        return this._height;
-    }
-
-    /**
-     * @typedef {Object} Size
-     * @property {number} width Width of game field
-     * @property {number} height Height of game field
-     * 
-     * Returns size of game field
-     * @returns {Size} Current size of game field
-     */
-    getSize() {
-        return {
-            width: this.width,
-            height: this.height
+    _putMoves() {
+        let moves = this._moves;
+        for(let move of moves) {
+            this._field[move.row][move.column] = move.player;
+        }
+        for(let i = 1; i <= this._height; i++) {
+            for(let j = 1; j <= this._width; j++) {
+                if(this._field !== undefined) {
+                    this._calculateState(i, j);
+                }
+            }
         }
     }
 
@@ -89,63 +94,42 @@ export class GameField {
         return this._moves;
     }
 
+    getFieldSize() {
+        return {height: this._height, width: this._width};
+    }
+
     /**
      * Resize game field.
-     * The playing field should be two rows larger
+     * The playing field should be on this._grow larger
      * than the farthest sign puted by the players.
      */
     _resizeField(row, column) {
-        let width = this.width;
-        let height = this.height;
-
-        for (let j = 0; j < 2 - column; j++) {
-            for (let i = 0; i < height; i++) {
-                this._state[i].unshift({});
-            }
-        }
-
+        let grow = this._grow;
+        let field = this._field;
         let shift = {
-            up: 2 - column > 0 ? 2 - column : 0,
-            left: 2 - row > 0 ? 2 - row : 0
-        }
-        this._shift += shift;
-        width += shift.left;
+            up: row - grow <= 0 ? grow - row + 1 : 0,
+            left: column - grow <= 0 ? grow - column + 1 : 0
+        };
+
+        let height = row + grow > this._height ? row + grow : this._height;
+        let width = column + grow > this._width ? column + grow : this._width;
+        
         height += shift.up;
+        width += shift.left;
 
-        for (let i = 0; i < 2 - row; i++) {
-            this._state.unshift([]);
-            for (let j = 0; j < width; j++) {
-                this._state[0].push({});
-            }
-        }
+        let tmp = this.constructor._initField(height, width);
+        this._field = tmp.field;
+        this._state = tmp.state;
 
-        column = 2 - column > 0 ? 2 - column : column;
-        row = 2 - row > 0 ? 2 - row : row;
-
-        for (let j = width; j < column + 3; j++) {
-            for (let i = 0; i < height; i++) {
-                this._state[i].push({});
-            }
-        }
-        width = width < column + 3 ? column + 3 : width;
-
-        for (let i = height; i < row + 3; i++) {
-            this._state.push([]);
-            for (let j = 0; j < width; j++) {
-                this._state[i].push({});
-            }
-        }
-        height = height < row + 3 ? row + 3 : height;
-
-        this._width = width;
         this._height = height;
+        this._width = width;
 
-        return {row, column, shift};
+        return shift;
     }
 
     /**
      * Calculate length of line in given direction
-     * @param {number} rdir Horizontal movemnt direction:
+     * @param {number} rdir Horizontal movement direction:
      *          1 from left to right,
      *          0 stay,
      *          -1 reverse direction
@@ -155,13 +139,14 @@ export class GameField {
      *          -1 way up
      */
     _checkDir(row, column, rdir, cdir) {
-        let player = this.player;
+        let player = this._field[row][column];
         let state = this._state;
+        let field = this._field;
 
         let i = row, j = column;
-        while (state[i][j].field != undefined && state[i][j].field == player) {
-            state[i][j].left = state[i-rdir][j-cdir].field == player ?
-                state[i-rdir][j-cdir].left + 1 : 1;
+        while (field[i][j] != undefined && field[i][j] == player) {
+            state[i][j][`dir${rdir}${cdir}`] = field[i-rdir][j-cdir] == player ?
+                state[i-rdir][j-cdir][`dir${rdir}${cdir}`] + 1 : 1;
             i += rdir; j += cdir;
         }
     }
@@ -184,43 +169,110 @@ export class GameField {
      * 
      * @param {number} row Row number from up side 
      * @param {number} column Column number from left side 
+     * @returns {boolean} True if turn succed, false if turn failed
      */
     turn(row, column) {
-        let tmp = this._resizeField(row, column); 
-        row = tmp.row;
-        column = tmp.column;
+        let player = this._player;
+        if (this._field[row][column] != undefined) return false;
+        this._field[row][column] = player;
 
-        let player = this.player;
-        this._moves.push({row, column, player, shift: tmp.shift})
-        
-        if (this._state[row][column].field != undefined) return;
-        this._state[row][column].field = this.player;
+        let shift = this._resizeField(row, column);
 
-        this._calculateState(row, column);
-        this._player = (this.player + 1) % this._playersNumber;
+        this._moves.push({row, column, player});
+        this._shiftMoves(shift);
+        this._putMoves();
+
+        this._player = (player + 1) % this._plNum;
+
+        return true;
     }
 }
 
-let game = new GameField();
-game
-game.turn(0, 0);
+class GameTicTacToe {
+    /**
+     * @constructor
+     * @this {GameTicTacToe}
+     * 
+     * @param {NodeElement} board Container in that shows game field 
+     * @param {GameField} field Object that describes current game state, default create new game state
+     */
+    constructor(uiBoard, board = undefined) {
+        
+        this._board = board || new GameField();
+        this._uiBoard = uiBoard;
 
-let showField = function(game) {
+    }
 
-    let tbody = document.getElementById("board").firstElementChild;
+    get board() {
+        return this._board;
+    }
 
-    for (let i = 0; i < game.height; i++) {
-        let tr = document.createElement("tr");
-        for (let j = 0; j < game.width; j++) {
-            let td = document.createElement("td");
-            tr.append(td);
+    /**
+     * Set innerHTML of board element to empty string. After that puts (shows as table) current game state in board element.
+     * 
+     * @returns {GameTicTacToe} Current game object
+     */
+    showField() {
+        this._uiBoard.innerHTML = "";
+        let size = this.board.getFieldSize();
+        for(let i = 0; i < size.height; i++) {
+            let tr = document.createElement("tr");
+            for(let j = 0; j < size.width; j++) {
+                let td = document.createElement("td");
+                td.append(document.createElement("div"));
+                tr.append(td);
+            }
+            this._uiBoard.append(tr);
         }
-        tbody.append(tr);
-    }
 
-    for (let move in game.moves) {
-        tbody.rows[move.row + move.shift.up]
-            .cells[move.column + move.shift.left]
-            .InnerHtml = `<div class=\"player${move.player}\"></div>`;
+        let shift = {up: 0, left: 0}
+        for (let move of this.board.moves) {
+
+            let row = this._uiBoard.rows[move.row - 1];
+            let cell = row.cells[move.column - 1];
+            cell = cell.getElementsByTagName("div")[0];
+
+            let div = document.createElement("div");
+            div.classList.add("player");
+            div.classList.add(`player${move.player}`);
+            cell.append(div);
+        }
+        return this;
     }
+}
+
+let startGame = function() {
+    let board = document.getElementById("board");
+    board.style.height = window.innerHeight + "px";
+    let div = document.createElement("div");
+    div.style.display = "inline-block";
+    div.style.height = window.innerHeight + "px";
+    div.style.width = "0px";
+    div.style.verticalAlign = "middle";
+    board.append(div);
+    board = board.firstElementChild;
+
+    let game = new GameTicTacToe(board);
+    game.showField();
+
+    board.addEventListener("mousedown", (ev) => {
+        console.log(ev.target);
+        let el = ev.target.parentNode;
+        if(el.localName == "td") {
+            let tr = el.parentNode;
+            let row = tr.rowIndex;
+            let column = el.cellIndex;
+            game.board.turn(row + 1, column + 1);
+            game.showField();
+        }
+        ev.stopPropagation();
+    });
+
+    document.removeEventListener("DOMContentLoaded", startGame);
+}
+
+if(document.readyState !== "lading") {
+    startGame();
+} else {
+    document.addEventListener("DOMContentLoaded", startGame);
 }

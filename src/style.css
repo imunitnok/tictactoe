@@ -1,5 +1,50 @@
+/*----- Main colors -----*/
+/*----- Style colors -----*/
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+#board {
+  width: 100%;
+  overflow: scroll;
+  text-align: center;
+  white-space: nowrap;
+}
+#board table {
+  display: inline-block;
+  vertical-align: middle;
+  border-spacing: 0px;
+  border-collapse: collapse;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid white;
+}
+#board table .player {
+  width: 40px;
+  height: 40px;
+}
+#board table .player0 {
+  background-color: #ac8cd5;
+  border: 1px solid #43215a;
+  border-radius: 50%;
+}
+#board table .player1 {
+  background-color: #d58cb5;
+  border: 1px solid #5a2138;
+}
 #board td {
-    width: 60px;
-    height: 60px;
-    background-color: #468;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  background-color: #9fb7db;
+  border: 1px solid white;
+}
+#board td > div {
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+}
+#board td > :hover {
+  background-color: #8cb5d5;
 }

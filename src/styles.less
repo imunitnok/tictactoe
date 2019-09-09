@@ -1,0 +1,74 @@
+/*----- Main colors -----*/
+
+@base-color: rgb(54, 91, 146);
+@error-color: spin(@base-color, 60);
+@info-color: spin(@base-color, -60);
+@warning-color: spin(@base-color, 120);
+@success-color: spin(@base-color, -120);
+
+/*----- Style colors -----*/
+
+@primary-bg: lighten(@base-color, 35%);
+@primary-border: darken(spin(@primary-bg, -10), 5%);
+@primary-text: darken(@primary-bg, 50%);
+
+@error-bg: lighten(@error-color, 35%);
+@error-border: darken(spin(@error-bg, -10), 5%);
+@error-text: darken(@error-bg, 50%);
+
+@info-bg: lighten(@info-color, 35%);
+@info-border: darken(spin(@info-bg, -10), 5%);
+@info-text: darken(@info-bg, 50%);
+
+@warning-bg: lighten(@warning-color, 35%);
+@warning-border: darken(spin(@warning-bg, -10), 5%);
+@warning-text: darken(@warning-bg, 50%);
+
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+#board {
+    width: 100%;
+    overflow: scroll;
+    text-align: center;
+    white-space: nowrap;
+    table {
+        display: inline-block;
+        vertical-align: middle;
+        border-spacing: 0px;
+        border-collapse: collapse;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid white;
+        .player {
+            width: 40px;
+            height: 40px;
+            &0 {
+                background-color: @error-border;
+                border: 1px solid @error-text;
+                border-radius: 50%;
+            }
+            &1 {
+                background-color: @warning-border;
+                border: 1px solid @warning-text;
+            }
+        }
+    }
+    td {
+        width: 60px;
+        height: 60px;
+        padding: 0;
+        background-color: @primary-bg;
+        border: 1px solid white;
+        >div {
+            width: 40px;
+            height: 40px;
+            padding: 10px;
+        }
+        >:hover {
+            background-color: @primary-border;
+        }
+    }
+}
