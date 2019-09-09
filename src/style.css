@@ -7,7 +7,7 @@ body {
 }
 #board {
   width: 100%;
-  overflow: scroll;
+  overflow: auto;
   text-align: center;
   white-space: nowrap;
 }
@@ -45,6 +45,27 @@ body {
   height: 40px;
   padding: 10px;
 }
-#board td > :hover {
+#board td:hover {
   background-color: #8cb5d5;
+}
+#board::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background-color: transparent;
+}
+#board::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: linear-gradient(left, #fff, #e4e4e4);
+  border: 1px solid #aaa;
+}
+#board::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid #ccc;
+}
+#board::-webkit-scrollbar-thumb:hover {
+  background: #fff;
+}
+#board::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(left, #22ADD4, #1E98BA);
 }
