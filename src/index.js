@@ -1,13 +1,13 @@
 "use strict";
 
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
-
 //import "./style.css"
 
 const DEF_INIT_WIDTH = 5;
 const DEF_INIT_HEIGHT = 5;
 const DEF_PLAYERS_NUM = 2;
 const DEF_GROW_SHIFT = 2;
+
+const LINE_LENGTH = 5;
 
 export class GameField {
 
@@ -32,6 +32,11 @@ export class GameField {
         /**@readonly */ this._player = 0;
         /**@private */ this._plNum = plNum;
 
+        /**@readonly */ this._scores = {};
+        for(let i = 0; i < this._plNum; i++) {
+            this._scores[`player${i}`] = 0;
+        } 
+
         /**@readonly */ this._moves = [];
     }
 
@@ -41,9 +46,9 @@ export class GameField {
      * @private
      * 
      * Creates empty game field with
-     * @param {number} height The height of initial game field
-     * @param {number} width The width of initial game field
-     * @returns {number[], State[]} Initial game field state 
+     * @param {number} height The height of inistateial game field
+     * @param {number} width The width of initistatel game field
+     * @returns {number[], State[]} Initial gamstate field state 
      * with empty State objects and undefined values of field array  
      */
     static _initField(height, width) {
@@ -92,6 +97,10 @@ export class GameField {
      */
     get moves() {
         return this._moves;
+    }
+
+    get scores() {
+        return this._scores;
     }
 
     getFieldSize() {
@@ -147,6 +156,9 @@ export class GameField {
         while (field[i][j] != undefined && field[i][j] == player) {
             state[i][j][`dir${rdir}${cdir}`] = field[i-rdir][j-cdir] == player ?
                 state[i-rdir][j-cdir][`dir${rdir}${cdir}`] + 1 : 1;
+            if(state[i][j][`dir${rdir}${cdir}`] > this._scores[`player${player}`]) {
+                this._scores[`player${player}`] = state[i][j][`dir${rdir}${cdir}`];
+            }
             i += rdir; j += cdir;
         }
     }
@@ -237,6 +249,15 @@ class GameTicTacToe {
             div.classList.add(`player${move.player}`);
             cell.append(div);
         }
+
+        for(let player of Object.keys(this.board.scores)) {
+            if(this.board.scores[player] >= LINE_LENGTH) {
+                alert(`${player} win!`);
+                this._board = new GameField();
+                this.showField();
+            }
+        }
+
         return this;
     }
 }
