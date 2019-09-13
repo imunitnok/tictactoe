@@ -4,10 +4,11 @@
   "description": "Simple TicTacToe application",
   "main": "index.html",
   "scripts": {
-    "run": "parcel index.html --open",
-    "build": "parcel build index.html",
+    "run": "parcel server index.html --port 5000 --hmr-port 1235",
+    "parcel-build": "parcel build index.html",
     "babel-build": "babel src -d lib",
-    "test": "mocha ./lib/test"
+    "test": "mocha ./lib/test",
+    "css": "lessc -s src/styles.less src/styles.css"
   },
   "author": "Timofei Shugailo",
   "license": "ISC",

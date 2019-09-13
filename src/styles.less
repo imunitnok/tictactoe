@@ -24,6 +24,8 @@
 @warning-border: darken(spin(@warning-bg, -10), 5%);
 @warning-text: darken(@warning-bg, 50%);
 
+@table-border: white;
+
 html, body {
     padding: 0;
     margin: 0;
@@ -31,65 +33,76 @@ html, body {
 
 #board {
     width: 100%;
-    overflow: auto;
     text-align: center;
     white-space: nowrap;
-    table {
+    .progress-bar {
+        div {
+            height: 20px;
+            background-color: @info-bg;
+        }
+    }
+    .table {
         display: inline-block;
         vertical-align: middle;
         border-spacing: 0px;
         border-collapse: collapse;
         border-radius: 20px;
         overflow: hidden;
-        border: 1px solid white;
         .player {
             width: 40px;
             height: 40px;
             &0 {
                 background-color: @error-border;
                 border: 1px solid @error-text;
-                border-radius: 50%;
             }
             &1 {
                 background-color: @warning-border;
                 border: 1px solid @warning-text;
+                border-radius: 50%;
             }
         }
     }
     td {
-        width: 60px;
-        height: 60px;
         padding: 0;
         background-color: @primary-bg;
-        border: 1px solid white;
+        border: 1px solid @table-border;
         >div {
-            width: 40px;
-            height: 40px;
-            padding: 10px;
+            height: 60px;
+            width: 60px;
+            padding-top: 9px;
+            padding-left: 9px;
+            box-sizing: border-box;
         }
         &:hover {
             background-color: @primary-border;
         }
     }
-    &::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-        background-color: transparent;
+    .crutch {
+        display: inline-block;
+        vertical-align: middle;
     }
-    &::-webkit-scrollbar-thumb {
-        border-radius: 10px;
-        background: linear-gradient(left, #fff, #e4e4e4);
-        border: 1px solid #aaa;
-    }
-    &::-webkit-scrollbar-track {
-        border-radius: 10px;
-        background: rgba(0,0,0,0.1);
-        border: 1px solid #ccc;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-        background: #fff;
-    }
-    &::-webkit-scrollbar-thumb:active {
-        background: linear-gradient(left, #22ADD4, #1E98BA);
+    .table-container {
+        overflow: auto;
+        &::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+            background-color: transparent;
+        }
+        &::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            background: linear-gradient(left, #fff, #e4e4e4);
+            border: 1px solid #aaa;
+        }
+        &::-webkit-scrollbar-track {
+            border-radius: 10px;
+            background: rgba(0,0,0,0.1);
+            border: 1px solid #ccc;
+        }
+        &::-webkit-scrollbar-thumb:hover {
+            background: #fff;
+        }
+        &::-webkit-scrollbar-thumb:active {
+            background: linear-gradient(left, #22ADD4, #1E98BA);
+        }
     }
 }
