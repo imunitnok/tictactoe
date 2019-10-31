@@ -4,11 +4,15 @@
   "description": "Simple TicTacToe application",
   "main": "index.html",
   "scripts": {
-    "run": "parcel server index.html --port 5000 --hmr-port 1235",
+    "start": "./node_modules/parcel-bundler/bin/cli.js index.html --port 8080",
+    "build": "parcel build index.html",
+    "run-parcel": "parcel server index.html --port 5000 --hmr-port 1235",
     "parcel-build": "parcel build index.html",
     "babel-build": "babel src -d lib",
-    "test": "mocha ./lib/test",
-    "css": "lessc -s src/styles.less src/styles.css"
+    "run-test": "mocha ./lib/test",
+    "css": "lessc -s src/styles.less src/styles.css",
+    "test": "npm run babel-build && npm run test",
+    "run": "npm run css && npm run run-parcel"
   },
   "author": "Timofei Shugailo",
   "license": "ISC",
@@ -22,5 +26,7 @@
     "mocha": "^6.2.0",
     "parcel-bundler": "^1.12.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "parcel-bundler": "^1.12.3"
+  }
 }

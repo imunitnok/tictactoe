@@ -1,5 +1,5 @@
 node_modules
 .cache
 dist
-li
+lib
 package-lock.json
