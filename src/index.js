@@ -12,10 +12,10 @@ let startGame = function() {
     let progress = board.getElementsByClassName("progress-bar")[0].firstElementChild;
 
     let tableContainer = board.getElementsByClassName("table-container")[0];
-    tableContainer.style.height = (body.offsetHeight - 20) + "px";
+    tableContainer.style.height = body.offsetHeight + "px";
 
     let crutch = board.getElementsByClassName("crutch")[0];
-    crutch.style.height = (body.offsetHeight - 20) + "px";
+    crutch.style.height = body.offsetHeight + "px";
     
     let game = new GameTicTacToe(table, document.createElement.bind(document), progress);
 

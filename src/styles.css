@@ -11,7 +11,8 @@ body {
   white-space: nowrap;
 }
 #board .progress-bar div {
-  height: 20px;
+  position: absolute;
+  height: 10px;
   background-color: #9fdbc3;
 }
 #board .table {
@@ -64,10 +65,11 @@ body {
 }
 #board .table-container::-webkit-scrollbar-thumb {
   border-radius: 10px;
-  background: linear-gradient(left, #fff, #e4e4e4);
+  background: rgba(0, 0, 0, 0.1);
   border: 1px solid #aaa;
 }
 #board .table-container::-webkit-scrollbar-track {
+  display: none;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.1);
   border: 1px solid #ccc;

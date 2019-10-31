@@ -37,7 +37,8 @@ html, body {
     white-space: nowrap;
     .progress-bar {
         div {
-            height: 20px;
+            position: absolute;
+            height: 10px;
             background-color: @info-bg;
         }
     }
@@ -90,10 +91,11 @@ html, body {
         }
         &::-webkit-scrollbar-thumb {
             border-radius: 10px;
-            background: linear-gradient(left, #fff, #e4e4e4);
+            background: rgba(0,0,0,0.1);
             border: 1px solid #aaa;
         }
         &::-webkit-scrollbar-track {
+            display: none;
             border-radius: 10px;
             background: rgba(0,0,0,0.1);
             border: 1px solid #ccc;
